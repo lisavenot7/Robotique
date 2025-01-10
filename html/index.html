@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Robot</title>
+
+	<script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+
+	<link rel="stylesheet" href="js/bootstrap/bootstrap.min.css">
+	<script type="text/javascript" src="js/bootstrap/bootstrap.min.js"></script>
+
+	<link rel="stylesheet" href="css/styles.css">
+
+	<script type="text/javascript">
+
+
+		$(document).ready(function () {
+			console.log("jQuery OK")
+			check() // recuperation et affichage de l'état du robot
+
+		})
+
+		function check() {
+			if ($("#check").html() == "ON") {
+				$.ajax({
+					method: "post",
+					url: "check",
+					dataType: "json",
+					success: function (data) {
+						console.log("check = "+JSON.stringify(data))
+
+						// affichage de l'état
+						if (data.etat != null) {
+							$("#d1").html(data.etat.d1)
+							$("#r1").html(data.etat.r1)
+						}
+
+						// affichage des messages
+						if (data.messages.length > 0) {
+							for (let i=0 ; i<data.messages.length ; i++) {
+								$("#"+data.messages[i].id).html(data.messages[i].mess)
+							}
+						}
+					}
+				})
+			}
+
+			// on relance check au bout d'une seconde
+			setTimeout(() => {
+				check()
+			}, 1000);
+		}
+
+		function usb_ouvrir() {
+			$.ajax({
+				method: "post",
+				url: "usb_ouvrir",
+				dataType: "json",
+				success: function (data) {
+				}
+			})
+		}
+
+		function usb_fermer() {
+			$.ajax({
+				method: "post",
+				url: "usb_fermer",
+				dataType: "json",
+				success: function (data) {
+				}
+			})
+		}
+
+		function mission(nom, val1, val2, val3) {
+			$.ajax({
+				method: "post",
+				url: "mission",
+				data: {
+					nom : nom,
+					val1 : val1, // param 1
+					val2 : val2, // param 2
+					val3 : val3, // param 3
+				},
+				dataType: "json",
+				success: function (data) {
+					console.log("cmd = " + JSON.stringify(data))
+				}
+			})
+
+		}
+
+	</script>
+</head>
+
+<body>
+
+	<div class="img" style="margin: 0; padding: 0; background-color: #bab86f;">
+		<img src="img/ubo.png" class="img-fluid d-block mx-auto" alt="Responsive image" />
+	</div>
+
+	<nav class="navbar navbar-default navbar-expand-sm" style="font-size: 100%;">
+
+		<div class="container-fluid" id="navbarTogglerDemo01">
+			<button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse"
+				data-bs-target="#collapsibleNavbar">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="collapsibleNavbar">
+				<ul class="navbar-nav">
+					<li class="nav-item">
+						<a class="nav-link" href="index.html">Robot
+						</a>
+					</li>
+					<!-- <li class="nav-item">
+					<a class="nav-link" href="ecran_rpi.html" target="_blank" >Écran RPI
+					</a>
+				  </li> -->
+
+				</ul>
+			</div>
+		</div>
+
+		<!--   <span style="color: #eceb22; font-weight: bold; font-size: 1.5rem;">Itinéraires Tro Breizh</span>
+	 -->
+
+
+	</nav>
+
+	<div style="margin-top: 1rem;">&nbsp;</div>
+	<div class="container" style="margin: 0 0 0 1rem; max-width: 100%; ">
+
+		<div id="content" >
+
+			USB&nbsp;&nbsp;&nbsp;&nbsp;
+			<button onclick="usb_ouvrir()">Ouvrir</button>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<button onclick="usb_fermer()">Fermer</button>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<span id="usb"></span>
+			<br><br>
+
+			<h3>Missions</h3>
+
+			<br>
+
+
+			<button onclick="mission('avancer',$('#vitesse_avancer').val(),$('#duree_avancer').val(),null)">Avancer</button>
+			vitesse 0..255 <input id="vitesse_avancer" type="text" value="200" style="width: 3rem;">
+			durée en ms <input id="duree_avancer" type="text" value="200" style="width: 3rem;">
+			<span id="avancer"></span>
+			<br><br>
+
+			<button
+				onclick="mission('avancer-obstacle',$('#vitesse_avancer_obstacle').val(),$('#duree_avancer_obstacle').val(),$('#distance_avancer_obstacle').val())">Avancer
+				jusqu'à un obstacle</button>
+				vitesse 0..255 <input id="vitesse_avancer_obstacle" type="text" value="200" style="width: 3rem;">
+				durée en ms <input id="duree_avancer_obstacle" type="text" value="500" style="width: 3rem;">
+				distance d'arrêt en mm <input id="distance_avancer_obstacle" type="text" value="400" style="width: 3rem;">
+			<br><br>
+
+			<button
+				onclick="mission('longer',$('#vitesse_longer').val(),$('#duree_longer').val(),$('#distance_longer').val())">Avancer
+				jusqu'à ce qu'il n'y est plus d'obstacle</button>
+				vitesse 0..255 <input id="vitesse_longer" type="text" value="200" style="width: 3rem;">
+				durée en ms <input id="duree_longer" type="text" value="500" style="width: 3rem;">
+				distance d'arrêt en mm <input id="distance_longer" type="text" value="400" style="width: 3rem;">
+			<br><br>
+
+			<button
+				onclick="mission('boite',$('#vitesse_longer').val(),$('#duree_longer').val(),$('#distance_longer').val())">Faire
+			le tour d'une boite (js)</button>
+				vitesse 0..255 <input id="vitesse_longer" type="text" value="200" style="width: 3rem;">
+				durée en ms <input id="duree_longer" type="text" value="500" style="width: 3rem;">
+				distance de maintient en mm <input id="distance_longer" type="text" value="400" style="width: 3rem;">
+			<br><br>
+
+
+			<h3>Etat du robot, distances en mm et indices de confiance</h3>
+			<br>
+			Check <button onclick="$('#check').html('ON')">On</button>
+			<button onclick="$('#check').html('OFF')">Off</button>
+			<span id="check">ON</span>
+
+			<br><br>
+			<table class="table table-bordered" style="width : 12rem;">
+				<tr><td style="width : 50%">d1 (mm)</td><td><span id="d1"></span></td></tr>
+				<tr><td>r1</td><td><span id="r1"></span></td></tr>
+			</table>
+
+			<br><br>
+
+			Messages <br><span id="messages"></span>
+
+		</div>
+
+	</div>
+
+</body>
+
+</html>
